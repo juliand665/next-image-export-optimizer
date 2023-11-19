@@ -128,20 +128,20 @@ const imageURLForRemoteImage = ({
 
 const optimizedLoader = ({
   src,
+  originalImageWidth,
   width,
   basePath,
 }: {
-  src: string | StaticImageData;
+  src: string;
+  originalImageWidth: number | undefined;
   width: number;
   basePath: string | undefined;
 }) => {
   const isStaticImage = typeof src === "object";
-  const _src = isStaticImage ? src.src : src;
-  const originalImageWidth = (isStaticImage && src.width) || undefined;
 
   // if it is a static image, we can use the width of the original image to generate a reduced srcset that returns
   // the same image url for widths that are larger than the original image
-  if (isStaticImage && originalImageWidth && width > originalImageWidth) {
+  if (originalImageWidth && width > originalImageWidth) {
     const deviceSizes = process.env.__NEXT_IMAGE_OPTS?.deviceSizes || [
       640, 750, 828, 1080, 1200, 1920, 2048, 3840,
     ];
@@ -162,16 +162,16 @@ const optimizedLoader = ({
     }
 
     if (nextLargestSize !== null) {
-      return generateImageURL(_src, nextLargestSize, basePath);
+      return generateImageURL(src, nextLargestSize, basePath);
     }
   }
 
   // Check if the image is a remote image (starts with http or https)
-  if (_src.startsWith("http")) {
-    return imageURLForRemoteImage({ src: _src, width, basePath });
+  if (src.startsWith("http")) {
+    return imageURLForRemoteImage({ src, width, basePath });
   }
 
-  return generateImageURL(_src, width, basePath);
+  return generateImageURL(src, width, basePath);
 };
 
 const fallbackLoader = ({ src }: { src: string | StaticImageData }) => {
@@ -267,6 +267,8 @@ const ExportedImage = forwardRef<HTMLImageElement | null, ExportedImageProps>(
       _src = basePath + "/" + _src;
     }
 
+    const originalImageWidth = typeof src === "object" ? src.width : width && Number(width);
+
     return (
       <Image
         ref={ref}
@@ -290,7 +292,7 @@ const ExportedImage = forwardRef<HTMLImageElement | null, ExportedImageProps>(
         loader={
           imageError || unoptimized === true
             ? fallbackLoader
-            : (e) => optimizedLoader({ src, width: e.width, basePath })
+            : (e) => optimizedLoader({ src: _src, originalImageWidth, width: e.width, basePath })
         }
         blurDataURL={automaticallyCalculatedBlurDataURL}
         onError={(error) => {
