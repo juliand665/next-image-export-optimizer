@@ -246,16 +246,17 @@ const ExportedImage = forwardRef<HTMLImageElement | null, ExportedImageProps>(
     // is expecting a base64 encoded string, but the generated blurDataURL is a normal URL
     const blurStyle =
       placeholder === "blur" &&
-      !isSVG &&
-      automaticallyCalculatedBlurDataURL &&
-      automaticallyCalculatedBlurDataURL.startsWith("/") &&
-      !blurComplete
+        !isSVG &&
+        automaticallyCalculatedBlurDataURL &&
+        automaticallyCalculatedBlurDataURL.startsWith("/") &&
+        !blurComplete
         ? {
-            backgroundSize: style?.objectFit || "cover",
-            backgroundPosition: style?.objectPosition || "50% 50%",
-            backgroundRepeat: "no-repeat",
-            backgroundImage: `url("${automaticallyCalculatedBlurDataURL}")`,
-          }
+          backgroundSize: style?.objectFit || "cover",
+          backgroundPosition: style?.objectPosition || "50% 50%",
+          backgroundRepeat: "no-repeat",
+          backgroundImage: `url("${automaticallyCalculatedBlurDataURL}")`,
+          filter: "blur(32px)",
+        }
         : undefined;
     const isStaticImage = typeof src === "object";
 
